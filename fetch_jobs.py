@@ -8,12 +8,14 @@ url = "https://api.adzuna.com/v1/api/jobs/in/search/1"
 params = {
     "app_id": APP_ID,
     "app_key": APP_KEY,
-    "what": "software developer",
+    "what": "software developer fresher",
     "results_per_page": 20
 }
 
 response = requests.get(url, params=params)
 data = response.json()
+
+print(f"Number of jobs found: {len(data.get('results', []))}")
 
 for job in data["results"]:
     title = job.get("title", "No title")
