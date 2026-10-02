@@ -3,11 +3,44 @@ import streamlit as st
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-st.title("IT Job Recommendation System for Freshers")
-st.write("Paste your resume or skill list below to find your best-matching jobs, with an ATS-style compatibility score for each.")
+st.set_page_config(page_title="SkillMatch Jobs", page_icon="🎯", layout="centered")
 
-resume_input = st.text_area("Your resume / skills (comma-separated)", 
-                             "Python, pandas, SQL, basic AWS knowledge, good communication skills")
+st.markdown("""
+    <style>
+    .main-header {
+        font-size: 42px;
+        font-weight: 800;
+        color: #2E5BFF;
+        margin-bottom: 0px;
+    }
+    .project-title {
+        font-size: 15px;
+        color: #AAAAAA;
+        font-style: italic;
+        margin-bottom: 8px;
+    }
+    .sub-header {
+        font-size: 16px;
+        color: #888888;
+        margin-bottom: 25px;
+    }
+    .job-card {
+        background-color: #1E2029;
+        padding: 18px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border-left: 4px solid #2E5BFF;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown('<p class="main-header">🎯 SkillMatch Jobs</p>', unsafe_allow_html=True)
+st.markdown('<p class="project-title">IT Job Recommendation System for Freshers</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">Skill-based job matching with ATS-style compatibility scoring, built for freshers</p>', unsafe_allow_html=True)
+
+resume_input = st.text_area("Paste your resume / skills (comma-separated)", 
+                             "Python, pandas, SQL, basic AWS knowledge, good communication skills",
+                             height=120)
 
 common_skills = ["python", "sql", "aws", "java", "docker", "react", "pandas",
                   "machine learning", "excel", "communication", "cloud", "linux"]
@@ -27,7 +60,7 @@ def ats_label(percent):
     else:
         return "Low Match", "🔴"
 
-if st.button("Find Matches"):
+if st.button("🔍 Find Matches", type="primary"):
     with open("saved_jobs.json") as f:
         data = json.load(f)
 
@@ -49,7 +82,6 @@ if st.button("Find Matches"):
     job_vectors = vectors[1:]
     scores = cosine_similarity(resume_vector, job_vectors)[0]
 
-    # Scale raw cosine similarity (small numbers) into a 0-100 ATS-style percentage
     max_score = max(scores) if max(scores) > 0 else 1
     scaled_scores = [(s / max_score) * 100 for s in scores]
 
@@ -60,8 +92,8 @@ if st.button("Find Matches"):
         required = [s for s in common_skills if s in job_text]
         return [s for s in required if s not in resume_skills]
 
-    st.subheader("Top 5 Job Matches — ATS Compatibility Score")
-    for job, raw_score, ats_percent in ranked[:5]:
+    st.subheader(f"Top {min(10, len(ranked))} Job Matches")
+    for job, raw_score, ats_percent in ranked[:10]:
         title = job.get("title", "No title")
         company = job.get("company", {}).get("display_name", "Unknown company")
         description = job.get("description", "")
@@ -70,10 +102,15 @@ if st.button("Find Matches"):
         gap_text = ", ".join(gaps) if gaps else "None identified"
         label, emoji = ats_label(ats_percent)
 
-        st.markdown(f"**{title}** — {company}")
-        st.write(f"{emoji} ATS Match: {round(ats_percent)}% ({label})")
-        st.progress(min(int(ats_percent), 100))
-        st.write(f"Missing keywords: {gap_text}")
-        if apply_link:
-            st.markdown(f"[Apply Here]({apply_link})")
-        st.divider()
+        with st.container():
+            st.markdown(f"""
+                <div class="job-card">
+                <b>{title}</b> — {company}<br>
+                {emoji} <b>ATS Match: {round(ats_percent)}%</b> ({label})
+                </div>
+            """, unsafe_allow_html=True)
+            st.progress(min(int(ats_percent), 100))
+            st.write(f"Missing keywords: {gap_text}")
+            if apply_link:
+                st.markdown(f"[Apply Here →]({apply_link})")
+            st.write("")
