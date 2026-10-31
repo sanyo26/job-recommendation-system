@@ -1,10 +1,22 @@
 import html
+import io
 import json
 import re
 import streamlit as st
 import streamlit.components.v1 as components
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
+# Optional libraries for reading resume files. The app still runs without them;
+# only that file type will show a clear message instead.
+try:
+    from pypdf import PdfReader
+except ImportError:
+    PdfReader = None
+try:
+    import docx
+except ImportError:
+    docx = None
 
 st.set_page_config(page_title="SkillMatch Jobs", page_icon="🎯", layout="wide")
 
@@ -97,6 +109,46 @@ def is_fresher_friendly(title):
     title_lower = title.lower()
     return not any(word in title_lower for word in SENIOR_TITLE_KEYWORDS)
 
+def read_resume_file(uploaded):
+    """Returns (text, error_message). Supports .txt, .pdf and .docx."""
+    name = uploaded.name.lower()
+    try:
+        if name.endswith(".txt"):
+            text = uploaded.getvalue().decode("utf-8", errors="ignore")
+            if not text.strip():
+                return "", "This text file is empty."
+            return text, None
+
+        if name.endswith(".pdf"):
+            if PdfReader is None:
+                return "", "PDF reading is not installed on this machine (pypdf is missing)."
+            reader = PdfReader(io.BytesIO(uploaded.getvalue()))
+            if reader.is_encrypted:
+                return "", "This PDF is password-protected. Remove the password and upload it again."
+            text = "\n".join((page.extract_text() or "") for page in reader.pages)
+            if not text.strip():
+                return "", ("No text found. This looks like a scanned or image-based PDF. "
+                            "Upload a text-based PDF or a DOCX, or paste your text instead.")
+            return text, None
+
+        if name.endswith(".docx"):
+            if docx is None:
+                return "", "DOCX reading is not installed on this machine (python-docx is missing)."
+            document = docx.Document(io.BytesIO(uploaded.getvalue()))
+            parts = [p.text for p in document.paragraphs]
+            for table in document.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        parts.append(cell.text)
+            text = "\n".join(parts)
+            if not text.strip():
+                return "", "No text found in this document."
+            return text, None
+
+        return "", "Unsupported file type. Please upload a .txt, .pdf or .docx file."
+    except Exception:
+        return "", "Could not read this file. Try another file, or paste your text instead."
+
 def has_skill(text, skill):
     # Whole-word match, so "excel" does not match "excellent" and "java" does not match "javascript"
     pattern = r"(?<![a-z0-9])" + re.escape(skill) + r"(?![a-z0-9])"
@@ -134,13 +186,33 @@ left_col, right_col = st.columns([1, 2], gap="large")
 
 with left_col:
     st.markdown("#### Your Profile")
-    resume_input = st.text_area("Paste your resume / skills", 
-                                 "Python, pandas, SQL, basic AWS knowledge, good communication skills",
-                                 height=160)
+    mode = st.radio("How do you want to add your resume?", ["Paste text", "Upload file"], horizontal=True)
+
+    resume_input = ""
+    if mode == "Paste text":
+        resume_input = st.text_area("Paste your resume / skills",
+                                     "Python, pandas, SQL, basic AWS knowledge, good communication skills",
+                                     height=160)
+    else:
+        uploaded = st.file_uploader("Upload your resume (.txt, .pdf or .docx)", type=["txt", "pdf", "docx"])
+        if uploaded is not None:
+            resume_input, read_error = read_resume_file(uploaded)
+            if read_error:
+                st.error(read_error)
+            else:
+                st.success(f"Read {len(resume_input.split())} words from {uploaded.name}")
+                with st.expander("See the text we read from your file"):
+                    st.write(resume_input[:1500] + ("..." if len(resume_input) > 1500 else ""))
+        st.caption("Tip: your file is read in memory and is not saved by this app.")
+
     find_clicked = st.button("🔍 Find My Matches", type="primary", use_container_width=True)
 
 with right_col:
     if find_clicked:
+        if not resume_input.strip():
+            st.warning("Please paste your skills or upload a resume file first.")
+            st.stop()
+
         data = all_data
         fresher_jobs = [job for job in data["results"] if is_fresher_friendly(job.get("title", ""))]
         if not fresher_jobs:
@@ -201,4 +273,4 @@ with right_col:
                 </div>
             """, unsafe_allow_html=True)
     else:
-        st.info("👈 Paste your skills on the left and click **Find My Matches** to see your results here.")
+        st.info("👈 Add your resume on the left and click **Find My Matches** to see your results here.")
