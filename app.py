@@ -23,42 +23,57 @@ except ImportError:
 st.set_page_config(page_title="SkillMatch Jobs", page_icon="🎯", layout="wide")
 
 st.markdown("""
-    <style>
-    .project-title { font-size: 16px; color: #8A8F98; font-style: italic; margin-bottom: 6px; }
-    .sub-header { font-size: 17px; color: #B0B4BB; margin-bottom: 10px; }
-    .job-card {
-        background: linear-gradient(145deg, #1A1C24, #15161C);
-        padding: 20px 22px; border-radius: 14px; margin-bottom: 18px;
-        border: 1px solid #2A2D37; border-left: 5px solid #4D7FFF;
-    }
-    .job-title { font-size: 18px; font-weight: 700; color: #FFFFFF; }
-    .job-company { font-size: 14px; color: #8A8F98; margin-bottom: 10px; }
-    .badge-strong { background-color: #1F3D2B; color: #4ADE80; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .badge-moderate { background-color: #3D351F; color: #FACC15; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .badge-low { background-color: #3D1F1F; color: #F87171; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .role-chip { background-color: #1E2A44; color: #8FB0FF; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-left: 8px; }
-    .skill-line { margin-top: 10px; margin-bottom: 4px; font-size: 13px; color: #B0B4BB; }
-    .apply-btn {
-        display: inline-block; margin-top: 10px; background-color: #4D7FFF; color: white !important;
-        padding: 6px 16px; border-radius: 8px; text-decoration: none !important; font-size: 13px; font-weight: 600;
-    }
-    </style>
-""", unsafe_allow_html=True)
+<style>
+.stApp { background: radial-gradient(circle at 12% 0%, #14203d 0%, #0B0F19 42%); }
+#MainMenu, footer, .stDeployButton { visibility: hidden; display: none; }
+.block-container { padding-top: 1.2rem; max-width: 1400px; }
+.project-title { font-size: 15px; color: #8FA0C0; font-style: italic; margin: 0 0 4px 0; }
+.sub-header { font-size: 17px; color: #B9C4DC; margin-bottom: 8px; }
+.panel-title { font-size: 20px; font-weight: 700; color: #FFFFFF; margin: 4px 0 8px 0; }
 
-# Big title: drawn inside its own iframe so Streamlit's styles cannot shrink it
-components.html(
-    """
-    <div style="font-family: 'Source Sans Pro', 'Segoe UI', Arial, sans-serif;
-                font-size: 80px; font-weight: 800; color: #4D7FFF;
-                line-height: 1.1; letter-spacing: -1px; margin: 0; padding: 0;">
-        🎯 SkillMatch Jobs
-    </div>
-    """,
-    height=110,
-)
-st.markdown('<p class="project-title">IT Job Recommendation System for Freshers</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">Skill-based job matching with ATS-style compatibility scoring</p>', unsafe_allow_html=True)
-st.divider()
+/* tabs */
+div[data-testid="stTabs"] button { font-size: 15px; font-weight: 600; padding: 8px 16px; border-radius: 10px 10px 0 0; transition: all .2s ease; }
+div[data-testid="stTabs"] button:hover { background: rgba(77,127,255,.14); }
+
+/* metric boxes */
+div[data-testid="stMetric"] { background: linear-gradient(145deg, #172033, #121827); border: 1px solid #26324D;
+  border-radius: 14px; padding: 14px 18px; transition: transform .2s ease, border-color .2s ease; }
+div[data-testid="stMetric"]:hover { transform: translateY(-3px); border-color: #4D7FFF; }
+
+/* buttons */
+div.stButton > button[kind="primary"] { background: linear-gradient(90deg, #4D7FFF, #7A5CFF); border: none; color: #fff;
+  font-weight: 700; border-radius: 12px; padding: .6rem 1rem; transition: transform .15s ease, box-shadow .15s ease; }
+div.stButton > button[kind="primary"]:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(77,127,255,.35); }
+div[data-testid="stDownloadButton"] button { border-radius: 12px; border: 1px solid #4D7FFF; transition: all .2s ease; }
+div[data-testid="stDownloadButton"] button:hover { background: rgba(77,127,255,.15); }
+
+/* job cards */
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.job-card { background: linear-gradient(145deg, #1A2033, #141827); padding: 20px 24px; border-radius: 16px; margin-bottom: 18px;
+  border: 1px solid #27304A; border-left: 5px solid #4D7FFF; animation: rise .5s ease both;
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+.job-card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,.45); border-color: #4D7FFF; }
+.job-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.job-title { font-size: 19px; font-weight: 700; color: #FFFFFF; }
+.rank { font-size: 22px; min-width: 34px; text-align: right; color: #8FA0C0; font-weight: 700; }
+.job-company { font-size: 14px; color: #8FA0C0; margin: 2px 0 12px 0; }
+.bar { height: 8px; background: #232B42; border-radius: 8px; overflow: hidden; margin: 12px 0 6px 0; }
+.fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, #4D7FFF, #7A5CFF); }
+.badge-strong { background: #1F3D2B; color: #4ADE80; padding: 3px 11px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.badge-moderate { background: #3D351F; color: #FACC15; padding: 3px 11px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.badge-low { background: #3D1F1F; color: #F87171; padding: 3px 11px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.role-chip { background: #1E2A44; color: #8FB0FF; padding: 3px 11px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-left: 8px; }
+.row-label { margin-top: 12px; font-size: 12px; color: #8FA0C0; text-transform: uppercase; letter-spacing: .6px; }
+.chip { display: inline-block; padding: 3px 10px; border-radius: 14px; font-size: 12px; font-weight: 600; margin: 4px 6px 0 0; }
+.chip-have { background: #16352A; color: #4ADE80; }
+.chip-miss { background: #3A2020; color: #FF8A7A; }
+.chip-why { background: #1B2745; color: #9DB7FF; }
+.note-line { margin-top: 12px; font-size: 13px; color: #B9C4DC; }
+.apply-btn { display: inline-block; margin-top: 14px; background: linear-gradient(90deg, #4D7FFF, #7A5CFF); color: white !important;
+  padding: 7px 18px; border-radius: 10px; text-decoration: none !important; font-size: 13px; font-weight: 700; transition: transform .15s ease; }
+.apply-btn:hover { transform: translateX(3px); }
+</style>
+""", unsafe_allow_html=True)
 
 with open("saved_jobs.json") as f:
     all_data = json.load(f)
@@ -74,8 +89,7 @@ common_skills = [
 SENIOR_TITLE_KEYWORDS = ["senior", "sr.", "lead", "manager", "principal", "head of",
                          "director", "architect", "staff", "vp", "chief", "sr "]
 
-# Role groups are decided from the job title; the FIRST group that matches wins,
-# so the more specific groups come first.
+# Role groups are decided from the job title; the FIRST group that matches wins
 ROLE_RULES = [
     ("QA / Testing", ["qa", "tester", "testing", "quality", "sdet", "selenium"]),
     ("Data Science / ML", ["data scientist", "machine learning", "ml", "ai", "artificial intelligence"]),
@@ -256,6 +270,50 @@ def health_check(text):
                    "note": f"{n} tracked skills found" + ("" if n >= 8 else ". Add the relevant skills you really have")})
     return sum(c["points"] for c in checks), checks, found
 
+def chips(items, css):
+    return "".join(f"<span class='chip {css}'>{html.escape(i)}</span>" for i in items)
+
+def job_card_html(r, rank):
+    medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(rank, f"#{rank}")
+    company_line = html.escape(r["company"]) + ((" · 📍 " + html.escape(r["location"])) if r["location"] else "")
+    link = html.escape(r["link"], quote=True)
+    parts = [f"<div class='job-card' style='animation-delay:{(rank - 1) * 0.07:.2f}s'>",
+             f"<div class='job-top'><div class='job-title'>{html.escape(r['title'])}</div><div class='rank'>{medal}</div></div>",
+             f"<div class='job-company'>{company_line}</div>",
+             f"<span class='{r['badge_class']}'>{r['emoji']} {round(r['percent'])}% · {r['label']}</span>",
+             f"<span class='role-chip'>{html.escape(r['family'])}</span>",
+             f"<div class='bar'><div class='fill' style='width:{max(2, round(r['percent']))}%'></div></div>"]
+    if r["why"]:
+        parts.append("<div class='row-label'>🔎 Why this match</div>" + chips(r["why"], "chip-why"))
+    if not r["required"]:
+        parts.append("<div class='note-line'>ℹ️ The preview doesn't list skills. Click Apply Now for the full requirements.</div>")
+    else:
+        have = [s for s in r["required"] if s not in r["missing"]]
+        if have:
+            parts.append("<div class='row-label'>✅ Skills you have</div>" + chips(have, "chip-have"))
+        if r["missing"]:
+            parts.append("<div class='row-label'>⚠️ Missing keywords</div>" + chips(r["missing"], "chip-miss"))
+        else:
+            parts.append("<div class='note-line'>You have every skill this posting mentions.</div>")
+    if link:
+        parts.append(f"<a href='{link}' target='_blank' class='apply-btn'>Apply Now →</a>")
+    parts.append("</div>")
+    return "".join(parts)
+
+# ---------- Title banner (drawn in its own frame so Streamlit styles cannot shrink it) ----------
+HERO = """
+<div style="font-family:'Source Sans Pro','Segoe UI',Arial,sans-serif;padding:4px 2px;display:flex;align-items:center;gap:14px;">
+  <span style="font-size:64px;line-height:1.1;">🎯</span>
+  <span style="font-size:78px;font-weight:800;line-height:1.1;letter-spacing:-1px;
+               background:linear-gradient(90deg,#4D7FFF,#8B6BFF,#FF7A59);-webkit-background-clip:text;
+               background-clip:text;color:transparent;">SkillMatch Jobs</span>
+</div>
+"""
+components.html(HERO, height=120)
+st.markdown('<p class="project-title">IT Job Recommendation System for Freshers</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">Skill-based job matching with ATS-style compatibility scoring</p>', unsafe_allow_html=True)
+st.divider()
+
 if "history" not in st.session_state:
     st.session_state["history"] = []
 
@@ -268,7 +326,7 @@ for fam, count in sorted(family_counts.items(), key=lambda x: (-x[1], x[0])):
 left_col, right_col = st.columns([1, 2], gap="large")
 
 with left_col:
-    st.markdown("#### Your Profile")
+    st.markdown('<div class="panel-title">👤 Your Profile</div>', unsafe_allow_html=True)
     mode = st.radio("How do you want to add your resume?", ["Paste text", "Upload file"], horizontal=True)
     resume_input = ""
     source_label = "Pasted text"
@@ -337,35 +395,12 @@ with right_col:
             m3.metric("Strong Matches", result["strong"])
 
             head_col, btn_col = st.columns([2, 1])
-            head_col.markdown("#### Top Job Matches")
+            head_col.markdown('<div class="panel-title">Top Job Matches</div>', unsafe_allow_html=True)
             btn_col.download_button("⬇️ Download results (CSV)", data=results_to_csv(result["rows"]),
                                     file_name="skillmatch_results.csv", mime="text/csv",
                                     use_container_width=True)
-            for r in result["rows"]:
-                company_line = html.escape(r["company"])
-                if r["location"]:
-                    company_line += " · 📍 " + html.escape(r["location"])
-                apply_link = html.escape(r["link"], quote=True)
-                why_html = ("<div class='skill-line'>🔎 Why this match: <b>" + html.escape(", ".join(r["why"])) + "</b></div>") if r["why"] else ""
-                if not r["required"]:
-                    gap_html = "<div class='skill-line'>ℹ️ The preview doesn't list skills. Click Apply Now for the full requirements.</div>"
-                elif not r["missing"]:
-                    gap_html = "<div class='skill-line'>✅ You have every skill this posting mentions: <b>" + ", ".join(r["required"]) + "</b></div>"
-                else:
-                    gap_html = ("<div class='skill-line'>Skills mentioned: " + ", ".join(r["required"]) + "</div>"
-                                "<div class='skill-line'>Missing keywords: <b>" + ", ".join(r["missing"]) + "</b></div>")
-                apply_html = f'<a href="{apply_link}" target="_blank" class="apply-btn">Apply Now →</a>' if apply_link else ""
-                st.markdown(f"""
-                    <div class="job-card">
-                        <div class="job-title">{html.escape(r["title"])}</div>
-                        <div class="job-company">{company_line}</div>
-                        <span class="{r['badge_class']}">{r['emoji']} {round(r['percent'])}% · {r['label']}</span>
-                        <span class="role-chip">{html.escape(r['family'])}</span>
-                        {why_html}
-                        {gap_html}
-                        {apply_html}
-                    </div>
-                """, unsafe_allow_html=True)
+            for rank, r in enumerate(result["rows"], start=1):
+                st.markdown(job_card_html(r, rank), unsafe_allow_html=True)
         else:
             st.info("👈 Add your resume on the left and click **Find My Matches** to see your results here.")
 
@@ -373,7 +408,7 @@ with right_col:
         if result:
             considered = [r for r in result["rows"] if r["required"]]
             missing_counts = Counter(s for r in considered for s in r["missing"])
-            st.markdown("#### What to learn next")
+            st.markdown('<div class="panel-title">What to learn next</div>', unsafe_allow_html=True)
             if missing_counts:
                 top_missing = missing_counts.most_common(8)
                 st.caption(f"Based on your top {len(result['rows'])} matches. Only {len(considered)} of them list skills in their preview.")
@@ -386,7 +421,7 @@ with right_col:
 
     with tab_market:
         counts, total = market_counts()
-        st.markdown("#### Skills employers ask for")
+        st.markdown('<div class="panel-title">Skills employers ask for</div>', unsafe_allow_html=True)
         if counts:
             top = counts.most_common(10)
             st.caption(f"Based on {total} fresher postings. Only the tracked skill list is counted, and Adzuna shows a description excerpt.")
@@ -396,7 +431,7 @@ with right_col:
             st.info("No tracked skills were found in the current job descriptions.")
 
     with tab_health:
-        st.markdown("#### Resume health check")
+        st.markdown('<div class="panel-title">Resume health check</div>', unsafe_allow_html=True)
         if len(resume_input.split()) >= 60:
             score, checks, found = health_check(resume_input)
             level = "Strong" if score >= 80 else "Fair" if score >= 50 else "Needs work"
